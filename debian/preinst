@@ -19,6 +19,21 @@ fi
 echo "Enabling TCP port 3000"
 sudo ufw allow 3000/tcp
 
+# Install Plugins
+echo Installing grafana plugins
+sudo grafana-cli plugins install ae3e-plotly-panel
+
+# Install Dashboards
+echo Loading Dashboards
+sudo mkdir /var/lib/grafana/dashboards
+sudo chown grafana:grafana /var/lib/grafana/dashboards
+sudo cp wlanpi-dashboard.json /var/lib/grafana/dashboards/wlanpi-dashboard.json
+sudo cp wlanpi-wispy.json /var/lib/grafana/dashboards/wlanpi-wispy.json
+sudo chown -R grafana:grafana /var/lib/grafana/dashboards/*
+
+# Provisioning
+sudo cp wlanpi-dashboards.yaml /etc/grafana/provisioning/dashboards/wlanpi-dashboards.yaml
+
 # Start Grafana service
 echo "Enabling grafana-server service"
 sudo /bin/systemctl enable grafana-server
