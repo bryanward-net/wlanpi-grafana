@@ -34,6 +34,22 @@ sudo chown -R grafana:grafana /var/lib/grafana/dashboards/*
 # Provisioning
 sudo cp wlanpi-dashboards.yaml /etc/grafana/provisioning/dashboards/wlanpi-dashboards.yaml
 
+# Generate Grafana API Token and set GRAFANA_TOKEN env var
+curl -X POST http://admin:admin@localhost:3000/api/serviceaccounts -H "Accept: application/json" -H "Content-Type: application/json" -d '{"name": "wlanpi", "role": "Admin", "isDisabled": false}'
+### Returns:
+#    {"id":2,"name":"wlanpi","login":"sa-wlanpi","orgId":1,"isDisabled":false,"role":"Admin","tokens":0,"avatarUrl":""}
+#   Need to get the "id" value
+curl -X POST http://admin:admin@localhost:3000/api/serviceaccounts/2/tokens -H "Accept: application/json" -H "Content-Type: application/json" -d '{"name": "wlanpi", "role": "Admin"}'
+### Returns:
+#    {"id":2,"name":"wlanpi","key":"glsa_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX_XXXXXXXX"}
+#   Need to get the "key" and store it in the env var GRAFANA_TOKEN
+
 # Start Grafana service
 echo "Enabling grafana-server service"
 sudo /bin/systemctl enable grafana-server
+
+# Start streamers (these should move to services)
+./stream-scan.sh &
+./stream-assoc.sh &
+./wispy-5ghz.sh &
+
